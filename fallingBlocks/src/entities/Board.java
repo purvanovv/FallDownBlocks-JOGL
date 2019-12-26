@@ -20,7 +20,6 @@ public class Board extends Entity {
 
 		}
 		if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
-			System.out.println(position.x);
 			if (position.x > -0.8f) {
 				position.x -= 0.02f;
 			}

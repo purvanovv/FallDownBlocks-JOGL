@@ -10,7 +10,7 @@ public class FallObject extends Entity {
 		super(model, position);
 	}
 
-	private void increasePosition(float dx, float dy, float dz) {
+	public void increasePosition(float dx, float dy, float dz) {
 		this.position.x += dx;
 		this.position.y += dy;
 		this.position.z += dz;

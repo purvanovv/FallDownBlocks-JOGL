@@ -1,5 +1,9 @@
 package engineTester;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -12,6 +16,7 @@ import renderEngine.Renderer;
 import shaders.StaticShader;
 
 public class MainGameLoop {
+
 	public static void main(String[] args) {
 		DisplayManager.createDisplay();
 		Loader loader = new Loader();
@@ -30,15 +35,17 @@ public class MainGameLoop {
 		Board board = new Board(rawModelBoard, new Vector3f(0, 0, 0));
 
 		RawModel rawModelFallObj = loader.loadToVAO(vertices2, indices2);
-		FallObject fallObject = new FallObject(rawModelFallObj, new Vector3f(0, 1.5f, 0));
+		List<FallObject> objects = initializeFallObjects(rawModelFallObj);
 
 		while (!Display.isCloseRequested()) {
 			renderer.prepare();
 			board.move();
-			fallObject.move();
 			shader.start();
 			renderer.render(board, shader);
-			renderer.render(fallObject, shader);
+
+			increaseObjectsPosition(objects);
+			multipleRenderObj(renderer, shader, objects);
+
 			shader.stop();
 			DisplayManager.updateDisplay();
 		}
@@ -46,4 +53,43 @@ public class MainGameLoop {
 		loader.cleanUp();
 		DisplayManager.closeDiplay();
 	}
+
+	private static List<FallObject> initializeFallObjects(RawModel rawModel) {
+		List<FallObject> objects = new ArrayList<FallObject>();
+		for (int i = 0; i < 4; i++) {
+			float min = -0.2f;
+			float max = 1.6f;
+			float posX = getRandomPosition(min, max);
+			FallObject fallObject = new FallObject(rawModel, new Vector3f(posX, 0, 0));
+			objects.add(fallObject);
+		}
+		return objects;
+	}
+
+	private static float getRandomPosition(float min, float max) {
+		Random rand = new Random();
+		return min + rand.nextFloat() * (max - min);
+	}
+
+	private static void multipleRenderObj(Renderer renderer, StaticShader shader, List<FallObject> objects) {
+		for (FallObject object : objects) {
+			renderer.render(object, shader);
+		}
+	}
+
+	private static void increaseObjectsPosition(List<FallObject> objects) {
+		for (FallObject object : objects) {
+			if (object.getPosition().y <= -1.5f) {
+				object.getPosition().y = 1.5f;
+				float min = -0.2f;
+				float max = 1.6f;
+				object.getPosition().x = getRandomPosition(min, max);
+			} else {
+				float min = -0.005f;
+				float max = -0.03f;
+				object.increasePosition(0, getRandomPosition(min, max), 0);
+			}
+		}
+	}
+
 }
