@@ -59,14 +59,17 @@ public class MainGameLoop {
 		for (int i = 0; i < 5; i++) {
 			float min = -0.95f;
 			float max = 0.95f;
-			float posX = getRandomPosition(min, max);
-			FallObject fallObject = new FallObject(rawModel, new Vector3f(posX, 0, 0));
+			float posX = getRandom(min, max);
+			float minSpeed = -0.005f;
+			float maxSpeed = -0.03f;
+			float speed = getRandom(minSpeed, maxSpeed);
+			FallObject fallObject = new FallObject(rawModel, new Vector3f(posX, 0, 0), speed);
 			objects.add(fallObject);
 		}
 		return objects;
 	}
 
-	private static float getRandomPosition(float min, float max) {
+	private static float getRandom(float min, float max) {
 		Random rand = new Random();
 		return min + rand.nextFloat() * (max - min);
 	}
@@ -83,11 +86,13 @@ public class MainGameLoop {
 				object.getPosition().y = 1.5f;
 				float min = -0.95f;
 				float max = 0.95f;
-				object.getPosition().x = getRandomPosition(min, max);
+				object.getPosition().x = getRandom(min, max);
+				float minSpeed = -0.005f;
+				float maxSpeed = -0.03f;
+				float speed = getRandom(minSpeed, maxSpeed);
+				object.setSpeed(speed);
 			} else {
-				float min = -0.005f;
-				float max = -0.03f;
-				object.increasePosition(0, getRandomPosition(min, max), 0);
+				object.increasePosition(0, object.getSpeed(), 0);
 			}
 		}
 	}
