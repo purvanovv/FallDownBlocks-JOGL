@@ -11,7 +11,6 @@ public class Board extends Entity {
 		super(model, position);
 	}
 
-	@Override
 	public void move() {
 		if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
 			if (position.x < 0.8f) {

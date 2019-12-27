@@ -28,6 +28,4 @@ public abstract class Entity {
 	public void setPosition(Vector3f position) {
 		this.position = position;
 	}
-	
-	public abstract void move();
 }

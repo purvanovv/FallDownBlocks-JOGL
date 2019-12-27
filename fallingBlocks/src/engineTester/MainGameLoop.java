@@ -27,9 +27,9 @@ public class MainGameLoop {
 
 		int[] indices = { 0, 1, 2, 1, 3, 2 };
 
-		float[] vertices2 = { -0.8f, -0.8f, 0, -0.8f, -0.4f, 0, -0.6f, -0.8f, 0, -0.6f, -0.4f, 0 };
+		float[] vertices2 = { -0.05f, 0.1f, 0, 0.05f, 0.1f, 0, -0.05f, -0.1f, 0, 0.05f, -0.1f, 0 };
 
-		int[] indices2 = { 0, 1, 2, 2, 1, 3 };
+		int[] indices2 = { 0, 2, 1, 2, 3, 1 };
 
 		RawModel rawModelBoard = loader.loadToVAO(vertices, indices);
 		Board board = new Board(rawModelBoard, new Vector3f(0, 0, 0));
@@ -43,7 +43,7 @@ public class MainGameLoop {
 			shader.start();
 			renderer.render(board, shader);
 
-			increaseObjectsPosition(objects);
+			increaseObjectsPosition(objects, board);
 			multipleRenderObj(renderer, shader, objects);
 
 			shader.stop();
@@ -56,9 +56,9 @@ public class MainGameLoop {
 
 	private static List<FallObject> initializeFallObjects(RawModel rawModel) {
 		List<FallObject> objects = new ArrayList<FallObject>();
-		for (int i = 0; i < 4; i++) {
-			float min = -0.2f;
-			float max = 1.6f;
+		for (int i = 0; i < 5; i++) {
+			float min = -0.95f;
+			float max = 0.95f;
 			float posX = getRandomPosition(min, max);
 			FallObject fallObject = new FallObject(rawModel, new Vector3f(posX, 0, 0));
 			objects.add(fallObject);
@@ -77,12 +77,12 @@ public class MainGameLoop {
 		}
 	}
 
-	private static void increaseObjectsPosition(List<FallObject> objects) {
+	private static void increaseObjectsPosition(List<FallObject> objects, Board board) {
 		for (FallObject object : objects) {
-			if (object.getPosition().y <= -1.5f) {
+			if (object.getPosition().y <= -1.5f || isObjectCollapseWithBoard(object, board)) {
 				object.getPosition().y = 1.5f;
-				float min = -0.2f;
-				float max = 1.6f;
+				float min = -0.95f;
+				float max = 0.95f;
 				object.getPosition().x = getRandomPosition(min, max);
 			} else {
 				float min = -0.005f;
@@ -90,6 +90,15 @@ public class MainGameLoop {
 				object.increasePosition(0, getRandomPosition(min, max), 0);
 			}
 		}
+	}
+
+	private static boolean isObjectCollapseWithBoard(FallObject object, Board board) {
+		if (object.getPosition().y + 0.5 <= board.getPosition().y
+				&& (object.getPosition().x <= board.getPosition().x + 0.2f + 0.05f
+						&& object.getPosition().x >= board.getPosition().x - 0.2f - 0.05f)) {
+			return true;
+		}
+		return false;
 	}
 
 }
