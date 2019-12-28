@@ -9,11 +9,13 @@ import org.lwjgl.util.vector.Vector3f;
 
 import entities.Board;
 import entities.FallObject;
+import entities.TexturedModel;
 import models.RawModel;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.Renderer;
 import shaders.StaticShader;
+import textures.ModelTexture;
 
 public class MainGameLoop {
 
@@ -31,20 +33,31 @@ public class MainGameLoop {
 
 		int[] indices2 = { 0, 2, 1, 2, 3, 1 };
 
-		RawModel rawModelBoard = loader.loadToVAO(vertices, indices);
+		float[] backgroundVertices = { -1f, 1f, 0, -1f, -1f, 0, 1f, -1f, 0, 1f, 1f, 0, };
+
+		int[] backgroundIndices = { 0, 1, 3, 3, 1, 2 };
+
+		float[] textureCordinates = { 0, 0, 0, 1, 1, 1, 1, 0 };
+
+		RawModel rawModelBackground = loader.loadToVAO(backgroundVertices, textureCordinates, backgroundIndices);
+		ModelTexture modelTexture = new ModelTexture(loader.loadTexture("background.png"));
+		TexturedModel backgroundModel = new TexturedModel(rawModelBackground, modelTexture, new Vector3f(0, 0, 0));
+
+		RawModel rawModelBoard = loader.loadToVAO(vertices, null, indices);
 		Board board = new Board(rawModelBoard, new Vector3f(0, 0, 0));
 
-		RawModel rawModelFallObj = loader.loadToVAO(vertices2, indices2);
+		RawModel rawModelFallObj = loader.loadToVAO(vertices2, null, indices2);
 		List<FallObject> objects = initializeFallObjects(rawModelFallObj);
 
 		while (!Display.isCloseRequested()) {
 			renderer.prepare();
 			board.move();
 			shader.start();
+			renderer.render(backgroundModel, shader);
 			renderer.render(board, shader);
 
 			increaseObjectsPosition(objects, board);
-			multipleRenderObj(renderer, shader, objects);
+		    multipleRenderObj(renderer, shader, objects);
 
 			shader.stop();
 			DisplayManager.updateDisplay();
