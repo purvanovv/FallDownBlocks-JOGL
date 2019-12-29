@@ -7,7 +7,6 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Matrix4f;
 
 import entities.Entity;
-import entities.TexturedModel;
 import models.RawModel;
 import shaders.StaticShader;
 import toolbox.Maths;
@@ -23,25 +22,16 @@ public class Renderer {
 		RawModel model = entity.getModel();
 		GL30.glBindVertexArray(model.getVaoID());
 		GL20.glEnableVertexAttribArray(0);
-		if (entity instanceof TexturedModel) {
-			GL20.glEnableVertexAttribArray(1);
-		}
-
+		GL20.glEnableVertexAttribArray(1);
 		Matrix4f transformationMatrix = Maths.createTransformationMatrix(entity.getPosition());
 
 		shader.loadTransformationMatrix(transformationMatrix);
 
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
-		if (entity instanceof TexturedModel) {
-			TexturedModel texturedModel = (TexturedModel) entity;
-			GL11.glBindTexture(GL11.GL_TEXTURE_2D, texturedModel.getTexture().getTextureID());
-
-		}
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, entity.getModelTexture().getTextureID());
 		GL11.glDrawElements(GL11.GL_TRIANGLES, model.getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
 		GL20.glDisableVertexAttribArray(0);
-		if (entity instanceof TexturedModel) {
-			GL20.glEnableVertexAttribArray(1);
-		}
+		GL20.glEnableVertexAttribArray(1);
 		GL30.glBindVertexArray(0);
 	}
 

@@ -29,9 +29,11 @@ public class MainGameLoop {
 
 		int[] indices = { 0, 1, 2, 1, 3, 2 };
 
-		float[] vertices2 = { -0.05f, 0.1f, 0, 0.05f, 0.1f, 0, -0.05f, -0.1f, 0, 0.05f, -0.1f, 0 };
+		float[] boardTextureCordinates = { 0, 0, 0, 1, 1, 0, 1, 1 };
 
-		int[] indices2 = { 0, 2, 1, 2, 3, 1 };
+		float[] verticesFallObj = { -0.05f, 0.1f, 0, 0.05f, 0.1f, 0, -0.05f, -0.1f, 0, 0.05f, -0.1f, 0 };
+
+		int[] indicesFallObj = { 0, 2, 1, 2, 3, 1 };
 
 		float[] backgroundVertices = { -1f, 1f, 0, -1f, -1f, 0, 1f, -1f, 0, 1f, 1f, 0, };
 
@@ -39,15 +41,18 @@ public class MainGameLoop {
 
 		float[] textureCordinates = { 0, 0, 0, 1, 1, 1, 1, 0 };
 
+		float[] bombTextueCordinates = { 0, 0, 1, 0, 0, 1, 1, 1 };
+
 		RawModel rawModelBackground = loader.loadToVAO(backgroundVertices, textureCordinates, backgroundIndices);
 		ModelTexture modelTexture = new ModelTexture(loader.loadTexture("background.png"));
 		TexturedModel backgroundModel = new TexturedModel(rawModelBackground, modelTexture, new Vector3f(0, 0, 0));
 
-		RawModel rawModelBoard = loader.loadToVAO(vertices, null, indices);
-		Board board = new Board(rawModelBoard, new Vector3f(0, 0, 0));
+		RawModel rawModelBoard = loader.loadToVAO(vertices, boardTextureCordinates, indices);
+		ModelTexture boardModelexture = new ModelTexture(loader.loadTexture("box.png"));
+		Board board = new Board(rawModelBoard, new Vector3f(0, 0, 0), boardModelexture);
 
-		RawModel rawModelFallObj = loader.loadToVAO(vertices2, null, indices2);
-		List<FallObject> objects = initializeFallObjects(rawModelFallObj);
+		RawModel rawModelBomb = loader.loadToVAO(verticesFallObj, bombTextueCordinates, indicesFallObj);
+		List<FallObject> objects = initializeFallObjects(rawModelBomb, loader);
 
 		while (!Display.isCloseRequested()) {
 			renderer.prepare();
@@ -57,7 +62,7 @@ public class MainGameLoop {
 			renderer.render(board, shader);
 
 			increaseObjectsPosition(objects, board);
-		    multipleRenderObj(renderer, shader, objects);
+			multipleRenderObj(renderer, shader, objects);
 
 			shader.stop();
 			DisplayManager.updateDisplay();
@@ -67,8 +72,9 @@ public class MainGameLoop {
 		DisplayManager.closeDiplay();
 	}
 
-	private static List<FallObject> initializeFallObjects(RawModel rawModel) {
+	private static List<FallObject> initializeFallObjects(RawModel rawModel, Loader loader) {
 		List<FallObject> objects = new ArrayList<FallObject>();
+		ModelTexture bombTexture = new ModelTexture(loader.loadTexture("bomb.png"));
 		for (int i = 0; i < 5; i++) {
 			float min = -0.95f;
 			float max = 0.95f;
@@ -76,7 +82,7 @@ public class MainGameLoop {
 			float minSpeed = -0.005f;
 			float maxSpeed = -0.03f;
 			float speed = getRandom(minSpeed, maxSpeed);
-			FallObject fallObject = new FallObject(rawModel, new Vector3f(posX, 0, 0), speed);
+			FallObject fallObject = new FallObject(rawModel, new Vector3f(posX, 0, 0), speed, bombTexture);
 			objects.add(fallObject);
 		}
 		return objects;

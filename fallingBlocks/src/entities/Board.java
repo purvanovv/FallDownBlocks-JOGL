@@ -4,11 +4,12 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
 import models.RawModel;
+import textures.ModelTexture;
 
 public class Board extends Entity {
 
-	public Board(RawModel model, Vector3f position) {
-		super(model, position);
+	public Board(RawModel model, Vector3f position, ModelTexture modelTexture) {
+		super(model, position, modelTexture);
 	}
 
 	public void move() {
