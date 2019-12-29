@@ -2,25 +2,29 @@ package entities;
 
 import org.lwjgl.util.vector.Vector3f;
 
-import models.RawModel;
-import textures.ModelTexture;
+import models.TexturedModel;
 
-public abstract class Entity {
-	protected RawModel model;
-	protected Vector3f position;
-	protected ModelTexture modelTexture;
+public class Entity {
 
-	public Entity(RawModel model, Vector3f position, ModelTexture modelTexture) {
+	private TexturedModel model;
+	private Vector3f position;
+
+	public Entity(TexturedModel model, Vector3f position) {
 		this.model = model;
 		this.position = position;
-		this.modelTexture = modelTexture;
 	}
 
-	public RawModel getModel() {
+	public void increasePosition(float dx, float dy, float dz) {
+		this.position.x += dx;
+		this.position.y += dy;
+		this.position.z += dz;
+	}
+
+	public TexturedModel getModel() {
 		return model;
 	}
 
-	public void setModel(RawModel model) {
+	public void setModel(TexturedModel model) {
 		this.model = model;
 	}
 
@@ -32,12 +36,4 @@ public abstract class Entity {
 		this.position = position;
 	}
 
-	public ModelTexture getModelTexture() {
-		return modelTexture;
-	}
-
-	public void setModelTexture(ModelTexture modelTexture) {
-		this.modelTexture = modelTexture;
-	}
-	
 }
