@@ -2,7 +2,6 @@ package renderEngine;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
@@ -18,18 +17,36 @@ import textures.ModelTexture;
 
 public class GameManager {
 
+	private static final String BACKGROUND_IMAGE_FILE = "background.png";
+	private static final String BOX_IMAGE_FILE = "box.png";
+	private static final String BANANA_IMAGE_FILE = "bananas.png";
+	private static final String APPLE_IMAGE_FILE = "apple.png";
+	private static final String BOMB_IMAGE_FILE = "bomb.png";
+
+	private static final int GAME_LIFES = 3;
+	private static final int BANANA_COUNT = 2;
+	private static final int BOMB_COUNT = 2;
+	private static final int APPLE_COUNT = 2;
+
+	private static final int BANANA_POINTS = 5;
+	private static final int APPLE_POINTS = 3;
+
 	private Entity boxEntity;
 	private Entity backgroundEntity;
 	private List<FallObject> fallObjects;
 	private Loader loader;
 	private Renderer renderer;
 	private StaticShader shader;
+	private int gameLifes;
+	private int gamePoints;
+	private boolean isGameRuning;
 
-	public GameManager(Renderer renderer,StaticShader shader, Loader loader) {
+	public GameManager(Renderer renderer, StaticShader shader, Loader loader) {
 		this.renderer = renderer;
 		this.shader = shader;
 		this.loader = loader;
-
+		this.gameLifes = GAME_LIFES;
+		this.gamePoints = 0;
 		this.initGameModels();
 	}
 
@@ -44,15 +61,15 @@ public class GameManager {
 
 		float[] textureCord = { 0, 0, 0, 1, 1, 0, 1, 1 };
 
-		this.backgroundEntity = initEntity(new Vector3f(0, 0, 0), "background.png", verticesBackground, textureCord,
-				indices);
-		this.boxEntity = initEntity(new Vector3f(0, 0, 0), "box.png", verticesBox, textureCord, indices);
+		this.backgroundEntity = initEntity(new Vector3f(0, 0, 0), BACKGROUND_IMAGE_FILE, verticesBackground,
+				textureCord, indices);
+		this.boxEntity = initEntity(new Vector3f(0, 0, 0), BOX_IMAGE_FILE, verticesBox, textureCord, indices);
 		this.fallObjects = initFallObjects(verticesFallObj, textureCord, indices);
 	}
 
 	public void start() {
-
-		while (!Display.isCloseRequested()) {
+		this.isGameRuning = true;
+		while (!Display.isCloseRequested() && isGameRuning) {
 			renderer.prepare();
 			move(boxEntity);
 			shader.start();
@@ -65,54 +82,65 @@ public class GameManager {
 			shader.stop();
 			DisplayManager.updateDisplay();
 		}
-		
+
+		System.out.println("Game lifes: " + this.gameLifes);
+		System.out.println("Game points: " + this.gamePoints);
+
 	}
 
 	private void increaseObjectsPosition(List<FallObject> objects, Entity boardEntity) {
 		for (FallObject object : objects) {
-			Entity objEntity = object.getEntity();
-			if (objEntity.getPosition().y <= -1.5f || isObjectCollapseWithBoard(objEntity, boardEntity)) {
-				objEntity.getPosition().y = 1.5f;
-				float min = -0.95f;
-				float max = 0.95f;
-				objEntity.getPosition().x = getRandom(min, max);
-				float minSpeed = -0.005f;
-				float maxSpeed = -0.03f;
-				float speed = getRandom(minSpeed, maxSpeed);
-				object.setSpeed(speed);
+			Entity entity = object.getEntity();
+			boolean isFallObjCollapseWithBox = object.collapseWithEntity(boardEntity);
+			if (isFallObjCollapseWithBox) {
+				switch (object.getType()) {
+				case BANANA: {
+					this.gamePoints += BANANA_POINTS;
+					break;
+				}
+				case APPLE: {
+					this.gamePoints += APPLE_POINTS;
+					break;
+				}
+				case BOMB: {
+					this.gameLifes -= 1;
+					if (gameLifes < 0) {
+						this.isGameRuning = false;
+					}
+					break;
+				}
+
+				default: {
+					break;
+				}
+				}
+				object.begin();
+			} else if (object.getEntity().getPosition().y <= -1.5f) {
+				object.begin();
 			} else {
-				object.increasePosition(0, object.getSpeed(), 0);
+				entity.increasePosition(0, object.getSpeed(), 0);
 			}
 		}
-	}
-
-	private boolean isObjectCollapseWithBoard(Entity objEntity, Entity boardEntity) {
-		if (objEntity.getPosition().y + 0.5 <= boardEntity.getPosition().y
-				&& (objEntity.getPosition().x <= boardEntity.getPosition().x + 0.2f + 0.05f
-						&& objEntity.getPosition().x >= boardEntity.getPosition().x - 0.2f - 0.05f)) {
-			return true;
-		}
-		return false;
 	}
 
 	private List<FallObject> initFallObjects(float[] verticesFallObj, float[] textureCord, int[] indices) {
 		List<FallObject> fallObjects = new ArrayList<FallObject>();
 		// create bombs
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < BOMB_COUNT; i++) {
 			FallObject fallObject = createFallObject(verticesFallObj, textureCord, indices, FallObjType.BOMB,
-					"bomb.png");
+					BOMB_IMAGE_FILE);
 			fallObjects.add(fallObject);
 		}
 		// create bananas
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < BANANA_COUNT; i++) {
 			FallObject fallObject = createFallObject(verticesFallObj, textureCord, indices, FallObjType.BANANA,
-					"bananas.png");
+					BANANA_IMAGE_FILE);
 			fallObjects.add(fallObject);
 		}
 		// create apples
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < APPLE_COUNT; i++) {
 			FallObject fallObject = createFallObject(verticesFallObj, textureCord, indices, FallObjType.APPLE,
-					"apple.png");
+					APPLE_IMAGE_FILE);
 			fallObjects.add(fallObject);
 		}
 
@@ -128,12 +156,9 @@ public class GameManager {
 		float minPosX = -0.95f;
 		float maxPosX = 0.95f;
 		float minSpeed = -0.005f;
-		float maxSpeed = -0.03f;
-		float posX = getRandom(minPosX, maxPosX);
-		float speed = getRandom(minSpeed, maxSpeed);
-
-		Entity entity = initEntity(new Vector3f(posX, 0, 0), texture, verticesFallObj, textureCord, indices);
-		return new FallObject(speed, entity, type);
+		float maxSpeed = -0.01f;
+		Entity entity = initEntity(new Vector3f(0, 0, 0), texture, verticesFallObj, textureCord, indices);
+		return new FallObject(entity, type, minPosX, maxPosX, minSpeed, maxSpeed);
 	}
 
 	private Entity initEntity(Vector3f position, String texture, float[] vertices, float[] textureCord, int[] indices) {
@@ -155,11 +180,6 @@ public class GameManager {
 				entity.getPosition().x -= 0.02f;
 			}
 		}
-	}
-
-	private float getRandom(float min, float max) {
-		Random rand = new Random();
-		return min + rand.nextFloat() * (max - min);
 	}
 
 }
