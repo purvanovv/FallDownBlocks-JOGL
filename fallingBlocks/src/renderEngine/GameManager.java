@@ -10,6 +10,7 @@ import org.lwjgl.util.vector.Vector3f;
 import entities.Entity;
 import entities.FallObjType;
 import entities.FallObject;
+import entities.Light;
 import models.RawModel;
 import models.TexturedModel;
 import shaders.StaticShader;
@@ -69,11 +70,13 @@ public class GameManager {
 
 	public void start() {
 		this.isGameRuning = true;
+		Light light = new Light(new Vector3f(1, 1, 1), new Vector3f(1, 1, 1));
 		while (!Display.isCloseRequested() && isGameRuning) {
 			renderer.prepare();
 			move(boxEntity);
 			shader.start();
 			renderer.render(backgroundEntity, shader);
+			shader.loadLight(light);
 			renderer.render(boxEntity, shader);
 
 			increaseObjectsPosition(fallObjects, boxEntity);
